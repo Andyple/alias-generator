@@ -11,6 +11,6 @@ package com.mycompany.alias.generator;
 public class AliasGenerator {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        AliasEngine.main(args);
     }
 }
