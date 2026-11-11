@@ -68,8 +68,39 @@ public class HistoryScanner {
      * Parses shell history file and populates Trie
      */
     public int readHistory(CommandTrieNode root) {
-        // TODO: Implementation using try...catch
-        return 0;
+        File historyFile = new File(System.getProperty("user.home"), ".bash_history");
+        int parsedCommands = 0;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(historyFile))) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String command = line.trim();
+
+                if (command.isEmpty()) {
+                    continue;
+                }
+
+                String[] tokens = command.split("\\s+");
+
+                if (aliasNames.contains(tokens[0])) {
+                    continue;
+                }
+
+                if (aliasExpansions.contains(command)) {
+                    continue;
+                }
+
+                root.insert(tokens);
+                parsedCommands++;
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("[warn] History file not found: " + historyFile);
+        } catch (IOException e) {
+            System.err.println("[warn] Could not read " + historyFile + ": " + e.getMessage());
+        }
+
+        return parsedCommands;
     }
 
     /**
