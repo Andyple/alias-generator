@@ -1,6 +1,11 @@
 package com.mycompany.alias.generator;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -10,7 +15,9 @@ public class HistoryScanner {
     private File bashAliasesFile;
 
     public HistoryScanner() {
-        // TODO: Initialize sets and target files
+        this.existingNames = new HashSet<>();
+        this.existingCommands = new HashSet<>();
+        this.bashAliasesFile = new File(System.getProperty("user.home"), ".bash_aliases");
     }
 
     /**
@@ -18,7 +25,43 @@ public class HistoryScanner {
      * (Satisfies rubric requirement: Exception Handling)
      */
     public void loadExistingAliases() {
-        // TODO: Implementation using try...catch (IOException, FileNotFoundException)
+        loadAliasesFrom(new File(System.getProperty("user.home"), ".bash_aliases"));
+        loadAliasesFrom(new File(System.getProperty("user.home"), ".bashrc"));
+    }
+
+    private void loadAliasesFrom(File file) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
+
+                if (!trimmed.startsWith("alias ")) {
+                    continue;
+                }
+
+                int equalsIndex = trimmed.indexOf('=');
+
+                if (equalsIndex < 0) {
+                    continue;
+                }
+
+                String name = trimmed.substring("alias ".length(), equalsIndex).trim();
+                String command = trimmed.substring(equalsIndex + 1).trim();
+
+                if (command.length() >= 2
+                        && (command.startsWith("\"") || command.startsWith("'"))) {
+                    command = command.substring(1, command.length() - 1);
+                }
+
+                existingNames.add(name);
+                existingCommands.add(command);
+            }
+        } catch (FileNotFoundException e) {
+            // A missing config file is normal; there is simply nothing to load.
+        } catch (IOException e) {
+            System.err.println("[warn] Could not read " + file + ": " + e.getMessage());
+        }
     }
 
     /**
