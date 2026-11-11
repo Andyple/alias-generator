@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Set;
 
 public class HistoryScanner {
-    private Set<String> existingNames;
-    private Set<String> existingCommands;
+    private Set<String> aliasNames;
+    private Set<String> aliasExpansions;
     private File bashAliasesFile;
 
     public HistoryScanner() {
-        this.existingNames = new HashSet<>();
-        this.existingCommands = new HashSet<>();
+        this.aliasNames = new HashSet<>();
+        this.aliasExpansions = new HashSet<>();
         this.bashAliasesFile = new File(System.getProperty("user.home"), ".bash_aliases");
     }
 
@@ -46,16 +46,16 @@ public class HistoryScanner {
                     continue;
                 }
 
-                String name = trimmed.substring("alias ".length(), equalsIndex).trim();
-                String command = trimmed.substring(equalsIndex + 1).trim();
+                String aliasName = trimmed.substring("alias ".length(), equalsIndex).trim();
+                String expansion = trimmed.substring(equalsIndex + 1).trim();
 
-                if (command.length() >= 2
-                        && (command.startsWith("\"") || command.startsWith("'"))) {
-                    command = command.substring(1, command.length() - 1);
+                if (expansion.length() >= 2
+                        && (expansion.startsWith("\"") || expansion.startsWith("'"))) {
+                    expansion = expansion.substring(1, expansion.length() - 1);
                 }
 
-                existingNames.add(name);
-                existingCommands.add(command);
+                aliasNames.add(aliasName);
+                aliasExpansions.add(expansion);
             }
         } catch (FileNotFoundException e) {
             // A missing config file is normal; there is simply nothing to load.
@@ -79,20 +79,20 @@ public class HistoryScanner {
         // TODO: Implementation using FileWriter in append mode
     }
 
-    public Set<String> getExistingNames() {
-        return existingNames;
+    public Set<String> getAliasNames() {
+        return aliasNames;
     }
 
-    public void setExistingNames(Set<String> existingNames) {
-        this.existingNames = existingNames;
+    public void setAliasNames(Set<String> aliasNames) {
+        this.aliasNames = aliasNames;
     }
 
-    public Set<String> getExistingCommands() {
-        return existingCommands;
+    public Set<String> getAliasExpansions() {
+        return aliasExpansions;
     }
 
-    public void setExistingCommands(Set<String> existingCommands) {
-        this.existingCommands = existingCommands;
+    public void setAliasExpansions(Set<String> aliasExpansions) {
+        this.aliasExpansions = aliasExpansions;
     }
 
     public File getBashAliasesFile() {
