@@ -4,7 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -107,7 +110,21 @@ public class HistoryScanner {
      * Appends approved aliases to the bash aliases file
      */
     public void appendAliases(List<AliasCandidate> list) {
-        // TODO: Implementation using FileWriter in append mode
+        String timestamp = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        try (FileWriter writer = new FileWriter(bashAliasesFile, true)) {
+            writer.write(System.lineSeparator());
+            writer.write("# alias-gen: generated " + timestamp + System.lineSeparator());
+
+            for (AliasCandidate candidate : list) {
+                String expansion = candidate.getOriginalCommand().replace("'", "'\\''");
+                writer.write("alias " + candidate.getProposedAlias()
+                        + "='" + expansion + "'" + System.lineSeparator());
+            }
+        } catch (IOException e) {
+            System.err.println("[warn] Could not write " + bashAliasesFile + ": " + e.getMessage());
+        }
     }
 
     public Set<String> getAliasNames() {
