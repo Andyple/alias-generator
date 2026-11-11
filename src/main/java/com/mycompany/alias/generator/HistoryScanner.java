@@ -86,6 +86,11 @@ public class HistoryScanner {
 
                 String[] tokens = command.split("\\s+");
 
+                if (tokens.length < 2) {
+                    // A single-word command gains nothing from a shorter alias.
+                    continue;
+                }
+
                 if (aliasNames.contains(tokens[0])) {
                     continue;
                 }
