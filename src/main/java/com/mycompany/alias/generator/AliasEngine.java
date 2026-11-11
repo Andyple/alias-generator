@@ -33,7 +33,54 @@ public class AliasEngine {
     }
 
     public void renderTUI() {
-        // TODO: Render ASCII/ANSI terminal table and action prompts
+        System.out.println("========================================================================");
+        System.out.println("                      ALIAS-GEN : SHELL OPTIMIZER");
+        System.out.println("========================================================================");
+        System.out.println("[Config] Ingested " + scanner.getAliasNames().size()
+                + " existing aliases from ~/.bash_aliases");
+        System.out.println("[Scan]   Parsed " + String.format("%,d", scannedCount)
+                + " commands from ~/.bash_history");
+        System.out.println("[Filter] " + candidates.size()
+                + " distinct candidate commands qualified by Pain Score");
+        System.out.println("------------------------------------------------------------------------");
+
+        if (candidates.isEmpty()) {
+            System.out.println("[i] No alias candidates found. Nothing to do.");
+            return;
+        }
+
+        System.out.printf("%-4s %5s %6s   %-30s %s%n",
+                "#", "FREQ", "PAIN", "PROPOSED ALIAS", "ORIGINAL COMMAND");
+        System.out.println("------------------------------------------------------------------------");
+
+        for (int i = 0; i < candidates.size(); i++) {
+            AliasCandidate candidate = candidates.get(i);
+            String aliasText = "alias " + candidate.getProposedAlias()
+                    + "='" + candidate.getOriginalCommand() + "'";
+
+            System.out.printf("[%d] %4dx %6d   %-30s %s%n",
+                    i + 1,
+                    candidate.getFrequency(),
+                    candidate.getPainScore(),
+                    truncate(aliasText, 30),
+                    truncate(candidate.getOriginalCommand(), 40));
+        }
+
+        System.out.println("------------------------------------------------------------------------");
+        System.out.println("[Actions]");
+        System.out.println("  • Type index numbers separated by commas to append (e.g., \"1, 3\")");
+        System.out.println("  • Type \"e <num>\" to rename an alias (e.g., \"e 1\")");
+        System.out.println("  • Type \"a\" or \"all\" to append all suggestions");
+        System.out.println("  • Type \"q\" to quit without modifying files");
+        System.out.println("------------------------------------------------------------------------");
+    }
+
+    private String truncate(String text, int maxLength) {
+        if (text.length() <= maxLength) {
+            return text;
+        }
+
+        return text.substring(0, maxLength - 3) + "...";
     }
 
     /**
