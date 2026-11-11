@@ -1,5 +1,8 @@
 package com.mycompany.alias.generator;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -143,11 +146,127 @@ public class AliasEngine {
     }
 
     public void handleUserInput() {
-        // TODO: Handle user selection loop (append, edit, quit)
+        if (candidates.isEmpty()) {
+            return;
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+        try {
+            while (true) {
+                System.out.print("Select: ");
+                String input = reader.readLine();
+
+                if (input == null) {
+                    return;
+                }
+
+                input = input.trim();
+
+                if (input.isEmpty()) {
+                    continue;
+                }
+
+                if (input.equalsIgnoreCase("q")) {
+                    System.out.println("[i] Aborted by user. No files were modified.");
+                    return;
+                }
+
+                if (input.equalsIgnoreCase("a") || input.equalsIgnoreCase("all")) {
+                    appendAndReport(candidates);
+                    return;
+                }
+
+                if (input.toLowerCase().startsWith("e ")) {
+                    renameAlias(input.substring(2).trim(), reader);
+                    continue;
+                }
+
+                List<AliasCandidate> selected = parseSelection(input);
+
+                if (selected == null) {
+                    System.out.println("[!] Unrecognized input. Enter index numbers, 'e <num>', 'a', or 'q'.");
+                    continue;
+                }
+
+                appendAndReport(selected);
+                return;
+            }
+        } catch (IOException e) {
+            System.err.println("[warn] Could not read input: " + e.getMessage());
+        }
+    }
+
+    private List<AliasCandidate> parseSelection(String input) {
+        List<AliasCandidate> selected = new ArrayList<>();
+
+        for (String part : input.split(",")) {
+            try {
+                int index = Integer.parseInt(part.trim());
+
+                if (index < 1 || index > candidates.size()) {
+                    return null;
+                }
+
+                selected.add(candidates.get(index - 1));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        return selected.isEmpty() ? null : selected;
+    }
+
+    private void renameAlias(String argument, BufferedReader reader) throws IOException {
+        int index;
+
+        try {
+            index = Integer.parseInt(argument);
+        } catch (NumberFormatException e) {
+            System.out.println("[!] Usage: e <number>");
+            return;
+        }
+
+        if (index < 1 || index > candidates.size()) {
+            System.out.println("[!] There is no suggestion [" + index + "].");
+            return;
+        }
+
+        AliasCandidate candidate = candidates.get(index - 1);
+        System.out.print("Enter new alias name for [" + index + "] (currently '"
+                + candidate.getProposedAlias() + "'): ");
+
+        String newName = reader.readLine();
+
+        if (newName == null || newName.trim().isEmpty()) {
+            System.out.println("[i] Name unchanged.");
+            return;
+        }
+
+        candidate.setProposedAlias(newName.trim());
+        System.out.println("[✓] Updated [" + index + "] to: alias "
+                + candidate.getProposedAlias() + "='" + candidate.getOriginalCommand() + "'");
+    }
+
+    private void appendAndReport(List<AliasCandidate> selected) {
+        scanner.appendAliases(selected);
+
+        System.out.println("[✓] Successfully appended " + selected.size()
+                + (selected.size() == 1 ? " alias" : " aliases")
+                + " to " + scanner.getBashAliasesFile() + ":");
+
+        for (AliasCandidate candidate : selected) {
+            System.out.println("    + alias " + candidate.getProposedAlias()
+                    + "='" + candidate.getOriginalCommand() + "'");
+        }
+
+        System.out.println();
+        System.out.println("[i] To activate immediately in current session, run:");
+        System.out.println("    source ~/.bash_aliases");
     }
 
     public static void main(String[] args) {
-        // TODO: Driver execution entry point
+        new AliasEngine().runPipeline();
     }
 
     public HistoryScanner getScanner() {
