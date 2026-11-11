@@ -48,7 +48,40 @@ public class CommandTrieNode {
      * (Satisfies rubric requirement: Recursive Method)
      */
     public void collectCandidates(String currentPath, List<AliasCandidate> results) {
-        // TODO: Recursive implementation
+        if (isEndOfCommand && qualifies(currentPath)) {
+            int painScore = currentPath.length() * frequency;
+            results.add(new AliasCandidate(currentPath, frequency, painScore));
+        }
+
+        if (children.isEmpty()) {
+            return;
+        }
+
+        for (CommandTrieNode child : children.values()) {
+            String childPath = currentPath.isEmpty()
+                    ? child.getToken()
+                    : currentPath + " " + child.getToken();
+
+            child.collectCandidates(childPath, results);
+        }
+    }
+
+    /**
+     * Dynamic threshold: short commands must be run often, while long
+     * one-liners only need a couple of runs to be worth aliasing.
+     */
+    private boolean qualifies(String command) {
+        int runsRequired;
+
+        if (command.length() < 20) {
+            runsRequired = 6;
+        } else if (command.length() <= 40) {
+            runsRequired = 4;
+        } else {
+            runsRequired = 2;
+        }
+
+        return frequency >= runsRequired;
     }
 
     public String getToken() {
