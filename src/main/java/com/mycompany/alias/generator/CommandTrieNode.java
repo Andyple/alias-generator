@@ -1,5 +1,7 @@
 package com.mycompany.alias.generator;
 
+import java.util.HashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,15 +12,35 @@ public class CommandTrieNode {
     private Map<String, CommandTrieNode> children;
 
     public CommandTrieNode() {
-        // TODO: Initialize root node
+        this("");
     }
 
     public CommandTrieNode(String token) {
-        // TODO: Initialize node with token
+        this.token = token;
+        this.frequency = 0;
+        this.isEndOfCommand = false;
+        this.children = new HashMap<>();
     }
 
+    /**
+     * Inserts one command into the trie, counting one more run at its leaf.
+     */
     public void insert(String[] tokens) {
-        // TODO: Insert token array into trie
+        CommandTrieNode node = this;
+
+        for (String token : tokens) {
+            CommandTrieNode child = node.children.get(token);
+
+            if (child == null) {
+                child = new CommandTrieNode(token);
+                node.children.put(token, child);
+            }
+
+            node = child;
+        }
+
+        node.isEndOfCommand = true;
+        node.frequency++;
     }
 
     /**
