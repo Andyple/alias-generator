@@ -25,6 +25,28 @@ java -Duser.home=/tmp/alias-gen-demo -cp target/classes com.mycompany.alias.gene
 Use the copy rather than `fixtures/home` directly, since approved aliases are
 written to the `.bash_aliases` under the chosen home directory.
 
+## Running in NetBeans
+
+1. **File → Open Project** and select the folder containing `pom.xml`.
+2. Right-click the project → **Properties → Libraries** and set **Java Platform**
+   to a JDK 27 (the pom targets release 27). Add it under **Tools → Java
+   Platforms** if it is missing.
+3. Right-click the project → **Properties → Run**:
+   - **Main Class**: `com.mycompany.alias.generator.AliasGenerator`
+   - **VM Options**: `-Duser.home=/tmp/alias-gen-demo`
+4. Press **F6** to run.
+
+NetBeans' Output window is read-only, so the interactive prompts cannot be
+answered there. Use **Window → IDE Tools → Terminal** (Ctrl+4) instead, after
+running the project once so the classes are compiled:
+
+```bash
+java -Duser.home=/tmp/alias-gen-demo -cp target/classes com.mycompany.alias.generator.AliasGenerator
+```
+
+If your NetBeans version offers **Run in External Terminal** under
+**Properties → Run**, enabling it makes F6 open a terminal where input works.
+
 ## Actions
 
 | Input | Effect |
