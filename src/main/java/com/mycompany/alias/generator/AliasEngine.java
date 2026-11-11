@@ -7,6 +7,7 @@ public class AliasEngine {
     private HistoryScanner scanner;
     private CommandTrieNode rootNode;
     private List<AliasCandidate> candidates;
+    private int scannedCount;
 
     public AliasEngine() {
         this.scanner = new HistoryScanner();
@@ -15,7 +16,20 @@ public class AliasEngine {
     }
 
     public void runPipeline() {
-        // TODO: Orchestrate ingestion -> scanning -> ranking -> TUI interaction
+        scanner.loadExistingAliases();
+        scannedCount = scanner.readHistory(rootNode);
+
+        candidates.clear();
+        rootNode.collectCandidates("", candidates);
+
+        for (AliasCandidate candidate : candidates) {
+            candidate.setProposedAlias(generateAliasName(candidate.getOriginalCommand()));
+        }
+
+        candidates.sort((a, b) -> Integer.compare(b.getPainScore(), a.getPainScore()));
+
+        renderTUI();
+        handleUserInput();
     }
 
     public void renderTUI() {
