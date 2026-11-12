@@ -58,15 +58,15 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 | Requirement | File Name | Method / Location | Line Number(s) |
 | :--- | :--- | :--- | :--- |
 | **Custom Class 1** | `CommandTrieNode.java` | Class definition | Line 8 |
-| **Custom Class 2** | `HistoryScanner.java` | Class definition | Line 15 |
-| **Custom Class 3** | `AliasEngine.java` | Class definition | Line 9 |
-| **Supporting Class** | `AliasCandidate.java` | Class definition | Line 3 |
-| **Entry Point** | `AliasGenerator.java` | Class definition | Line 16 |
-| **Loop Requirement** | `HistoryScanner.java` | `while` loop in `readHistory()` reading history lines | Line 89 (loop body 89–113) |
-| **Loop Requirement (2)** | `HistoryScanner.java` | `while` loop in `loadAliasesFrom()` reading alias files | Line 49 |
-| **Recursive Method** | `CommandTrieNode.java` | `collectCandidates()` definition | Line 50; recursive call on line 65 |
-| **Exception Handling**| `HistoryScanner.java` | `loadExistingAliases()` → `loadAliasesFrom()` `try...catch` | Method line 40; `try` line 46; catches lines 73 and 75 |
-| **Exception Handling (2)**| `HistoryScanner.java` | `readHistory()` `try...catch` | Method line 83; `try` line 86; catches lines 114 and 116 |
+| **Custom Class 2** | `HistoryScanner.java` | Class definition | Line 16 |
+| **Custom Class 3** | `AliasEngine.java` | Class definition | Line 10 |
+| **Supporting Class** | `AliasCandidate.java` | Class definition | Line 4 |
+| **Entry Point** | `AliasGenerator.java` | Class definition | Line 9 |
+| **Loop Requirement** | `HistoryScanner.java` | `while` loop in `readHistory()` reading history lines | Line 81 (loop body 81–104) |
+| **Loop Requirement (2)** | `HistoryScanner.java` | `while` loop in `loadAliasesFrom()` reading alias files | Line 43 |
+| **Recursive Method** | `CommandTrieNode.java` | `collectCandidates()` definition | Line 35; recursive call on line 46 |
+| **Exception Handling**| `HistoryScanner.java` | `loadExistingAliases()` → `loadAliasesFrom()` `try...catch` | Method line 34; `try` line 40; catches lines 67 and 69 |
+| **Exception Handling (2)**| `HistoryScanner.java` | `readHistory()` `try...catch` | Method line 75; `try` line 78; catches lines 105 and 107 |
 
 ---
 
@@ -96,9 +96,9 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 +----------------------------------+     | - frequency: int                 |
 | + runPipeline(): void            |     | - isEndOfCommand: boolean        |
 | - prepare(): void                |     | - children: Map<String, Node>    |
-| + renderTUI(): void              |     +----------------------------------+
-| + generateAliasName(cmd): String |     | + insert(tokens): void           |
-| + handleUserInput(): void        |     | + collectCandidates(...): void   |
+| - renderTUI(): void              |     +----------------------------------+
+| - generateAliasName(cmd): String |     | + insert(tokens): void           |
+| - handleUserInput(): void        |     | + collectCandidates(...): void   |
 | + main(args: String[]): void     |     +----------------------------------+
 +----------------------------------+
 
@@ -110,7 +110,7 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 | - frequency: int                 |
 | - painScore: int                 |
 +----------------------------------+
-| + getters / setters              |
+| + getters, setProposedAlias      |
 +----------------------------------+
 
 Relationships:

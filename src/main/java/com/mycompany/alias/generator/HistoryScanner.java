@@ -12,31 +12,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+// Reads dotfiles and writes approved aliases back to ~/.bash_aliases.
 public class HistoryScanner {
-    private Set<String> aliasNames;
-    private Set<String> aliasExpansions;
-    private File historyFile;
-    private File bashAliasesFile;
-    private File bashRcFile;
+    private final Set<String> aliasNames = new HashSet<>();
+    private final Set<String> aliasExpansions = new HashSet<>();
+    private final File historyFile;
+    private final File bashAliasesFile;
+    private final File bashRcFile;
 
     public HistoryScanner() {
-        this(new File(System.getProperty("user.home"), ".bash_history"),
-                new File(System.getProperty("user.home"), ".bash_aliases"),
-                new File(System.getProperty("user.home"), ".bashrc"));
+        this(defaultFile(".bash_history"), defaultFile(".bash_aliases"), defaultFile(".bashrc"));
     }
 
     public HistoryScanner(File historyFile, File bashAliasesFile, File bashRcFile) {
-        this.aliasNames = new HashSet<>();
-        this.aliasExpansions = new HashSet<>();
         this.historyFile = historyFile;
         this.bashAliasesFile = bashAliasesFile;
         this.bashRcFile = bashRcFile;
     }
 
-    /**
-     * Reads existing aliases from ~/.bash_aliases or ~/.bashrc
-     * (Satisfies rubric requirement: Exception Handling)
-     */
+    // Loads aliases from ~/.bash_aliases and ~/.bashrc so they are never suggested again.
     public void loadExistingAliases() {
         loadAliasesFrom(bashAliasesFile);
         loadAliasesFrom(bashRcFile);
@@ -77,9 +71,7 @@ public class HistoryScanner {
         }
     }
 
-    /**
-     * Parses shell history file and populates Trie
-     */
+    // Reads history into the trie, skipping commands that cannot benefit from an alias.
     public int readHistory(CommandTrieNode root) {
         int parsedCommands = 0;
 
@@ -96,7 +88,6 @@ public class HistoryScanner {
                 String[] tokens = command.split("\\s+");
 
                 if (tokens.length < 2) {
-                    // A single-word command gains nothing from a shorter alias.
                     continue;
                 }
 
@@ -120,10 +111,8 @@ public class HistoryScanner {
         return parsedCommands;
     }
 
-    /**
-     * Appends approved aliases to the bash aliases file
-     */
-    public void appendAliases(List<AliasCandidate> list) {
+    // Appends approved aliases under a timestamp, escaping single quotes for Bash.
+    public void appendAliases(List<AliasCandidate> aliases) {
         String timestamp = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
@@ -131,7 +120,7 @@ public class HistoryScanner {
             writer.write(System.lineSeparator());
             writer.write("# alias-gen: generated " + timestamp + System.lineSeparator());
 
-            for (AliasCandidate candidate : list) {
+            for (AliasCandidate candidate : aliases) {
                 String expansion = candidate.getOriginalCommand().replace("'", "'\\''");
                 writer.write("alias " + candidate.getProposedAlias()
                         + "='" + expansion + "'" + System.lineSeparator());
@@ -145,18 +134,6 @@ public class HistoryScanner {
         return aliasNames;
     }
 
-    public void setAliasNames(Set<String> aliasNames) {
-        this.aliasNames = aliasNames;
-    }
-
-    public Set<String> getAliasExpansions() {
-        return aliasExpansions;
-    }
-
-    public void setAliasExpansions(Set<String> aliasExpansions) {
-        this.aliasExpansions = aliasExpansions;
-    }
-
     public String getHistoryPath() {
         return displayPath(historyFile);
     }
@@ -165,7 +142,12 @@ public class HistoryScanner {
         return displayPath(bashAliasesFile);
     }
 
-    private String displayPath(File file) {
+    private static File defaultFile(String fileName) {
+        return new File(System.getProperty("user.home"), fileName);
+    }
+
+    // Shows paths inside the home directory as ~/file instead of /home/user/file.
+    private static String displayPath(File file) {
         String home = System.getProperty("user.home");
         String path = file.getAbsolutePath();
 
@@ -174,13 +156,5 @@ public class HistoryScanner {
         }
 
         return path;
-    }
-
-    public File getBashAliasesFile() {
-        return bashAliasesFile;
-    }
-
-    public void setBashAliasesFile(File bashAliasesFile) {
-        this.bashAliasesFile = bashAliasesFile;
     }
 }

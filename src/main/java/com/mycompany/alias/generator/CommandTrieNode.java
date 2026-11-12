@@ -1,15 +1,15 @@
 package com.mycompany.alias.generator;
 
 import java.util.HashMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// One word in a command; its children are the words that can follow it.
 public class CommandTrieNode {
-    private String token;
+    private final String token;
     private int frequency;
     private boolean isEndOfCommand;
-    private Map<String, CommandTrieNode> children;
+    private final Map<String, CommandTrieNode> children = new HashMap<>();
 
     public CommandTrieNode() {
         this("");
@@ -17,59 +17,37 @@ public class CommandTrieNode {
 
     public CommandTrieNode(String token) {
         this.token = token;
-        this.frequency = 0;
-        this.isEndOfCommand = false;
-        this.children = new HashMap<>();
     }
 
-    /**
-     * Inserts one command into the trie, counting one more run at its leaf.
-     */
+    // Adds one command, counting a run at its final word.
     public void insert(String[] tokens) {
         CommandTrieNode node = this;
 
         for (String token : tokens) {
-            CommandTrieNode child = node.children.get(token);
-
-            if (child == null) {
-                child = new CommandTrieNode(token);
-                node.children.put(token, child);
-            }
-
-            node = child;
+            node = node.children.computeIfAbsent(token, CommandTrieNode::new);
         }
 
         node.isEndOfCommand = true;
         node.frequency++;
     }
 
-    /**
-     * Recursive method to traverse Trie branches and collect candidates meeting criteria
-     * (Satisfies rubric requirement: Recursive Method)
-     */
+    // Recursively walks every branch and collects commands that meet the pain threshold.
     public void collectCandidates(String currentPath, List<AliasCandidate> results) {
         if (isEndOfCommand && qualifies(currentPath)) {
             int painScore = currentPath.length() * frequency;
             results.add(new AliasCandidate(currentPath, frequency, painScore));
         }
 
-        if (children.isEmpty()) {
-            return;
-        }
-
         for (CommandTrieNode child : children.values()) {
             String childPath = currentPath.isEmpty()
-                    ? child.getToken()
-                    : currentPath + " " + child.getToken();
+                    ? child.token
+                    : currentPath + " " + child.token;
 
             child.collectCandidates(childPath, results);
         }
     }
 
-    /**
-     * Dynamic threshold: short commands must be run often, while long
-     * one-liners only need a couple of runs to be worth aliasing.
-     */
+    // Short commands need more runs; long one-liners are worth aliasing sooner.
     private boolean qualifies(String command) {
         int runsRequired;
 
@@ -82,37 +60,5 @@ public class CommandTrieNode {
         }
 
         return frequency >= runsRequired;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public int getFrequency() {
-        return frequency;
-    }
-
-    public void setFrequency(int frequency) {
-        this.frequency = frequency;
-    }
-
-    public boolean isEndOfCommand() {
-        return isEndOfCommand;
-    }
-
-    public void setEndOfCommand(boolean endOfCommand) {
-        isEndOfCommand = endOfCommand;
-    }
-
-    public Map<String, CommandTrieNode> getChildren() {
-        return children;
-    }
-
-    public void setChildren(Map<String, CommandTrieNode> children) {
-        this.children = children;
     }
 }

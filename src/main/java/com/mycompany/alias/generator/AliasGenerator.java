@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 package com.mycompany.alias.generator;
 
 import java.io.File;
@@ -9,10 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
-/**
- *
- * @author andy
- */
+// Demo entry point: copies bundled dotfiles into a temp home, then runs the normal TUI.
 public class AliasGenerator {
     public static final boolean DEMO_MODE = true;
 
@@ -29,6 +22,7 @@ public class AliasGenerator {
         }
     }
 
+    // Creates an isolated home and copies the three demo dotfiles into it.
     private static void runDemo() throws IOException {
         File home = Files.createTempDirectory("alias-gen-demo-").toFile();
 
@@ -40,10 +34,10 @@ public class AliasGenerator {
         System.out.println("[Demo] Your real dotfiles are not touched.");
         System.out.println();
 
-        HistoryScanner scanner = new HistoryScanner(history, aliases, bashrc);
-        new AliasEngine(scanner).runPipeline();
+        new AliasEngine(new HistoryScanner(history, aliases, bashrc)).runPipeline();
     }
 
+    // Copies one bundled resource into the demo home.
     private static File copyDemoFile(File home, String resource, String fileName)
             throws IOException {
         File target = new File(home, fileName);
