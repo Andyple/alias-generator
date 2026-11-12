@@ -59,14 +59,14 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 | :--- | :--- | :--- | :--- |
 | **Custom Class 1** | `CommandTrieNode.java` | Class definition | Line 8 |
 | **Custom Class 2** | `HistoryScanner.java` | Class definition | Line 15 |
-| **Custom Class 3** | `AliasEngine.java` | Class definition | Line 9 |
+| **Custom Class 3** | `AliasEngine.java` | Class definition | Line 12 |
 | **Supporting Class** | `AliasCandidate.java` | Class definition | Line 3 |
-| **Entry Point** | `AliasGenerator.java` | Class definition | Line 11 |
-| **Loop Requirement** | `HistoryScanner.java` | `while` loop in `readHistory()` reading history lines | Line 80 (loop body 80–102) |
-| **Loop Requirement (2)** | `HistoryScanner.java` | `while` loop in `loadAliasesFrom()` reading alias files | Line 39 |
+| **Entry Point** | `AliasGenerator.java` | Class definition | Line 16 |
+| **Loop Requirement** | `HistoryScanner.java` | `while` loop in `readHistory()` reading history lines | Line 89 (loop body 89–113) |
+| **Loop Requirement (2)** | `HistoryScanner.java` | `while` loop in `loadAliasesFrom()` reading alias files | Line 49 |
 | **Recursive Method** | `CommandTrieNode.java` | `collectCandidates()` definition | Line 50; recursive call on line 65 |
-| **Exception Handling**| `HistoryScanner.java` | `loadExistingAliases()` → `loadAliasesFrom()` `try...catch` | Method line 30; `try` line 36; catches lines 63 and 65 |
-| **Exception Handling (2)**| `HistoryScanner.java` | `readHistory()` `try...catch` | Method line 73; `try` line 77; catches lines 105 and 107 |
+| **Exception Handling**| `HistoryScanner.java` | `loadExistingAliases()` → `loadAliasesFrom()` `try...catch` | Method line 40; `try` line 46; catches lines 73 and 75 |
+| **Exception Handling (2)**| `HistoryScanner.java` | `readHistory()` `try...catch` | Method line 83; `try` line 86; catches lines 114 and 116 |
 
 ---
 
@@ -74,42 +74,50 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 
 ```text
 +----------------------------------+     +----------------------------------+
-|          AliasGenerator          |     |         HistoryScanner           |
-|----------------------------------|     |----------------------------------|
-| + main(args: String[]): void     |     | - aliasNames: Set<String>        |
+|          AliasGenerator          |     |          HistoryScanner          |
++----------------------------------+     +----------------------------------+
+| + DEMO_MODE: boolean             |     | - aliasNames: Set<String>        |
 +----------------------------------+     | - aliasExpansions: Set<String>   |
-                 | calls                | - bashAliasesFile: File          |
-                 v                      |----------------------------------|
-+----------------------------------+     | + loadExistingAliases(): void    |
-|            AliasEngine           |     | + readHistory(root): int         |
-|----------------------------------|     | + appendAliases(list): void      |
+| + main(args: String[]): void     |     | - historyFile: File              |
+| - runDemo(): void                |     | - bashAliasesFile: File          |
+| - copyDemoFile(...): File        |     | - bashRcFile: File               |
++----------------------------------+     +----------------------------------+
+                                         | + loadExistingAliases(): void    |
+                 | calls                 | + readHistory(root): int         |
+                 v                       | + appendAliases(list): void      |
+                                         | + getHistoryPath(): String       |
++----------------------------------+     | + getBashAliasesPath(): String   |
+|           AliasEngine            |     +----------------------------------+
++----------------------------------+
 | - scanner: HistoryScanner        |     +----------------------------------+
-| - rootNode: CommandTrieNode      |
+| - rootNode: CommandTrieNode      |     |         CommandTrieNode          |
 | - candidates: List<AliasCand.>   |     +----------------------------------+
-| - scannedCount: int              |     |         CommandTrieNode          |
-|----------------------------------|     |----------------------------------|
-| + runPipeline(): void            |     | - token: String                  |
-| + renderTUI(): void              |     | - frequency: int                 |
-| + generateAliasName(cmd): String |     | - isEndOfCommand: boolean        |
-| + handleUserInput(): void        |     | - children: Map<String, Node>    |
-| + main(args: String[]): void     |     |----------------------------------|
-+----------------------------------+     | + insert(tokens): void           |
-                                         | + collectCandidates(...): void   |
-                                         +----------------------------------+
+| - scannedCount: int              |     | - token: String                  |
++----------------------------------+     | - frequency: int                 |
+| + runPipeline(): void            |     | - isEndOfCommand: boolean        |
+| + runDemo(): void                |     | - children: Map<String, Node>    |
+| - prepare(): void                |     +----------------------------------+
+| + renderTUI(): void              |     | + insert(tokens): void           |
+| + generateAliasName(cmd): String |     | + collectCandidates(...): void   |
+| + handleUserInput(): void        |     +----------------------------------+
+| - verifyAliases(list): void      |
+| + main(args: String[]): void     |
++----------------------------------+
 
 +----------------------------------+
 |          AliasCandidate          |
-|----------------------------------|
++----------------------------------+
 | - originalCommand: String        |
 | - proposedAlias: String          |
 | - frequency: int                 |
 | - painScore: int                 |
-|----------------------------------|
++----------------------------------+
 | + getters / setters              |
 +----------------------------------+
 
 Relationships:
   AliasGenerator   ..>  AliasEngine          calls
+  AliasGenerator   ..>  HistoryScanner       creates the demo scanner
   AliasEngine      *--> HistoryScanner       1
   AliasEngine      *--> CommandTrieNode      1  (root)
   AliasEngine      o--> AliasCandidate       0..*
