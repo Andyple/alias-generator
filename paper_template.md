@@ -74,7 +74,9 @@ For each command it multiplies the character count by the run count to get a Pai
   - What did you learn about designing practical CLI/TUI tools?
 --&gt;
 
-[Write what you learned here...]
+Before this project I had never built a trie. What surprised me was that a node can end one command and still lead to longer ones, so `git` and `git status` share a branch without interfering with each other. Recursion turned out to be the simplest way to walk every branch, rebuild the command as I go, and count each full command exactly once.
+
+I also learned that a terminal tool is mostly about trust. Showing the frequency and pain score lets me see why a command ranked high instead of taking the program's word for it, and letting me rename a suggestion before it is written makes the result feel like mine. The biggest lesson was to make file changes boring: preview first, write only what I approve, and change nothing when I quit.
 
 
 
