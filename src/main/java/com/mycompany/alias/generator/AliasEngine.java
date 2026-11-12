@@ -1,8 +1,11 @@
 package com.mycompany.alias.generator;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +48,24 @@ public class AliasEngine {
     public void runDemo() {
         prepare();
         renderTUI();
+
+        if (candidates.isEmpty()) {
+            return;
+        }
+
+        System.out.print("Select: ");
+        System.out.println("e 1");
+        System.out.print(renamePrompt(1));
+        System.out.println("my-db");
+        applyRename(1, "my-db");
+
+        System.out.print("Select: ");
+        System.out.println("a");
+        appendAndReport(candidates);
+
+        System.out.println();
+        System.out.println("[Verify] New aliases in a fresh bash shell:");
+        verifyAliases(candidates);
     }
 
     public void renderTUI() {
@@ -244,17 +265,26 @@ public class AliasEngine {
             return;
         }
 
-        AliasCandidate candidate = candidates.get(index - 1);
-        System.out.print("Enter new alias name for [" + index + "] (currently '"
-                + candidate.getProposedAlias() + "'): ");
+        System.out.print(renamePrompt(index));
 
         String newName = reader.readLine();
+        applyRename(index, newName);
+    }
 
+    private String renamePrompt(int index) {
+        AliasCandidate candidate = candidates.get(index - 1);
+
+        return "Enter new alias name for [" + index + "] (currently '"
+                + candidate.getProposedAlias() + "'): ";
+    }
+
+    private void applyRename(int index, String newName) {
         if (newName == null || newName.trim().isEmpty()) {
             System.out.println("[i] Name unchanged.");
             return;
         }
 
+        AliasCandidate candidate = candidates.get(index - 1);
         candidate.setProposedAlias(newName.trim());
         System.out.println("[✓] Updated [" + index + "] to: alias "
                 + candidate.getProposedAlias() + "='" + candidate.getOriginalCommand() + "'");
@@ -275,6 +305,58 @@ public class AliasEngine {
         System.out.println();
         System.out.println("[i] To activate immediately in current session, run:");
         System.out.println("    source ~/.bash_aliases");
+    }
+
+    private void verifyAliases(List<AliasCandidate> selected) {
+        File aliasesFile = scanner.getBashAliasesFile();
+        File home = aliasesFile.getParentFile();
+        Path script = null;
+
+        try {
+            script = Files.createTempFile("alias-gen-verify-", ".sh");
+
+            StringBuilder content = new StringBuilder();
+            content.append("source '").append(aliasesFile.getAbsolutePath())
+                    .append("'").append(System.lineSeparator());
+
+            for (AliasCandidate candidate : selected) {
+                content.append("type '").append(candidate.getProposedAlias())
+                        .append("'").append(System.lineSeparator());
+            }
+
+            Files.writeString(script, content.toString());
+
+            ProcessBuilder builder = new ProcessBuilder("bash", "-i", script.toString());
+            builder.environment().put("HOME", home.getAbsolutePath());
+            builder.redirectErrorStream(true);
+
+            Process process = builder.start();
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains(" is aliased to ")) {
+                        System.out.println("    " + line);
+                    }
+                }
+            }
+
+            process.waitFor();
+        } catch (IOException e) {
+            System.err.println("[warn] Could not verify aliases: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            if (script != null) {
+                try {
+                    Files.deleteIfExists(script);
+                } catch (IOException e) {
+                    // A leftover temp script is harmless.
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {
