@@ -1,36 +1,22 @@
-# Project Paper: [Your Project Title Here]
+# Project Paper: Alias Generator
 
-**Student Name:** [Your Name]  
+**Student Name:** Andy Le  
 **Course:** CS 3300 — Programming Project  
 **Date:** November 11, 2026  
 
 ---
 
 ## a. Why Did You Choose This Project?
-&lt;!-- Target: ~100–120 words --&gt;
-&lt;!-- Prompts to answer:
-  - What problem does this solve in your daily computing/terminal workflow?
-  - Why is typing long administrative, container, or SSH commands frustrating?
-  - Why did you want to build this instead of a standard tutorial or game?
---&gt;
 
 I chose this project to solve a single problem that is easy to ignore, but would save me a ton of time in the long run. My day-to-day work on my computer consists of being in the terminal 75% of the time. In that workflow, I frequently type long and repetitive commands over and over again, such as system service checks, remote SSH connections, and multi-flag Docker commands. While I can manually configure shell aliases, doing so breaks my focus in the middle of a task, and sometimes I honestly just forget the second after I run the command.
 
 This project solves this problem by looking through my terminal history, identifying my most tedious and repetitive commands, and making my workflow less frustrating by automatically suggesting practical aliases to aid me.
 
-
-
 ---
 
 ## b. What Does It Compute? Inputs and Outputs
-&lt;!-- Target: ~120–150 words --&gt;
 
 ### Inputs
-&lt;!-- List all inputs your program reads:
-  - Shell history file path (~/.bash_history or ~/.zsh_history)
-  - Existing alias configs (~/.bashrc or ~/.bash_aliases)
-  - User terminal selections/inputs (e.g., typing numbers or &#39;e 1&#39;)
---&gt;
 * **Input 1:** My Bash history file, `~/.bash_history`, where every command I type is stored one line at a time.
 * **Input 2:** My existing aliases from `~/.bash_aliases` and `~/.bashrc`, so the program knows which shortcuts and commands I already have.
 * **Input 3:** My choices in the terminal: `1, 3` to accept suggestions, `e 1` to rename one, `a` to accept all, or `q` to quit.
@@ -44,13 +30,9 @@ For each command it multiplies the character count by the run count to get a Pai
 * **Console Output:** A table of candidates sorted by Pain Score, showing the frequency, score, suggested alias, and original command, followed by a prompt.
 * **File Output:** The aliases I approve, appended to `~/.bash_aliases` under a timestamp comment.
 
-
-
 ---
 
 ## c. Program Operation & Numbered Algorithm
-&lt;!-- Target: ~150 words --&gt;
-&lt;!-- The prompt allows this to be a numbered list instead of paragraphs. --&gt;
 
 1. **Read Existing Aliases:** `HistoryScanner.loadExistingAliases()` reads `~/.bash_aliases` and `~/.bashrc`, splits every line that begins with `alias` at the `=`, strips the surrounding quotes, and stores the name in `aliasNames` and the expansion in `aliasExpansions`.
 2. **Scan History File:** `readHistory()` opens `~/.bash_history`, reads it line by line in a `while` loop, trims each line, and splits it into whitespace-separated tokens.
@@ -61,29 +43,17 @@ For each command it multiplies the character count by the run count to get a Pai
 7. **Display Interactive TUI:** `renderTUI()` sorts the candidates by descending Pain Score and prints the scan statistics followed by a fixed-width table of frequency, pain score, proposed alias, and original command.
 8. **Append Approved Aliases to Disk:** `handleUserInput()` accepts index lists such as `1, 3`, `e <num>` to rename a suggestion, `a` or `all` to accept everything, or `q` to quit. Approved aliases are appended to `~/.bash_aliases` under a timestamp comment, with single quotes escaped so the file remains valid Bash.
 
-
-
 ---
 
 ## d. What Have You Learned From This Project?
-&lt;!-- Target: ~100–120 words --&gt;
-&lt;!-- Prompts to answer:
-  - What did you learn about implementing a custom tree/Trie structure in Java?
-  - What did you learn about recursion and tree traversal?
-  - How did writing try...catch blocks help with reading real-world dirty files?
-  - What did you learn about designing practical CLI/TUI tools?
---&gt;
 
 Before this project I had never built a trie. What surprised me was that a node can end one command and still lead to longer ones, so `git` and `git status` share a branch without interfering with each other. Recursion turned out to be the simplest way to walk every branch, rebuild the command as I go, and count each full command exactly once.
 
 I also learned that a terminal tool is mostly about trust. Showing the frequency and pain score lets me see why a command ranked high instead of taking the program's word for it, and letting me rename a suggestion before it is written makes the result feel like mine. The biggest lesson was to make file changes boring: preview first, write only what I approve, and change nothing when I quit.
 
-
-
 ---
 
 ## e. Code Requirements Navigation Table
-&lt;!-- Fill in the exact line numbers from your NetBeans project before exporting to PDF. --&gt;
 
 | Requirement | File Name | Method / Location | Line Number(s) |
 | :--- | :--- | :--- | :--- |
