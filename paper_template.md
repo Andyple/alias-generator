@@ -1,7 +1,7 @@
 # Project Paper: Alias Generator
 
 **Student Name:** Andy Le  
-**Course:** CS 3300 — Programming Project  
+**Course:** CS 3300 — Object Oriented Programming  
 **Date:** November 11, 2026  
 
 ---
