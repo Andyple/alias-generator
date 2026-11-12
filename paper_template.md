@@ -59,7 +59,7 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 | :--- | :--- | :--- | :--- |
 | **Custom Class 1** | `CommandTrieNode.java` | Class definition | Line 8 |
 | **Custom Class 2** | `HistoryScanner.java` | Class definition | Line 15 |
-| **Custom Class 3** | `AliasEngine.java` | Class definition | Line 12 |
+| **Custom Class 3** | `AliasEngine.java` | Class definition | Line 9 |
 | **Supporting Class** | `AliasCandidate.java` | Class definition | Line 3 |
 | **Entry Point** | `AliasGenerator.java` | Class definition | Line 16 |
 | **Loop Requirement** | `HistoryScanner.java` | `while` loop in `readHistory()` reading history lines | Line 89 (loop body 89–113) |
@@ -95,13 +95,11 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 | - scannedCount: int              |     | - token: String                  |
 +----------------------------------+     | - frequency: int                 |
 | + runPipeline(): void            |     | - isEndOfCommand: boolean        |
-| + runDemo(): void                |     | - children: Map<String, Node>    |
-| - prepare(): void                |     +----------------------------------+
-| + renderTUI(): void              |     | + insert(tokens): void           |
-| + generateAliasName(cmd): String |     | + collectCandidates(...): void   |
-| + handleUserInput(): void        |     +----------------------------------+
-| - verifyAliases(list): void      |
-| + main(args: String[]): void     |
+| - prepare(): void                |     | - children: Map<String, Node>    |
+| + renderTUI(): void              |     +----------------------------------+
+| + generateAliasName(cmd): String |     | + insert(tokens): void           |
+| + handleUserInput(): void        |     | + collectCandidates(...): void   |
+| + main(args: String[]): void     |     +----------------------------------+
 +----------------------------------+
 
 +----------------------------------+
