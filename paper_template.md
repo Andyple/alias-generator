@@ -14,7 +14,9 @@
   - Why did you want to build this instead of a standard tutorial or game?
 --&gt;
 
-[Write your rationale here...]
+I chose this project to solve a single problem that is easy to ignore, but would save me a ton of time in the long run. My day-to-day work on my computer consists of being in the terminal 75% of the time. In that workflow, I frequently type long and repetitive commands over and over again, such as system service checks, remote SSH connections, and multi-flag Docker commands. While I can manually configure shell aliases, doing so breaks my focus in the middle of a task, and sometimes I honestly just forget the second after I run the command.
+
+This project solves this problem by looking through my terminal history, identifying my most tedious and repetitive commands, and making my workflow less frustrating by automatically suggesting practical aliases to aid me.
 
 
 
