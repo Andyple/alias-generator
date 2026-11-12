@@ -11,13 +11,18 @@ NetBeans (F6) and the program:
 
 1. Creates a fresh temporary home and copies the bundled demo files into it.
 2. Prints the temp path and the normal candidate table.
-3. Runs a scripted session (`e 1` renames the first suggestion to `my-db`,
-   then `a` appends everything).
-4. Verifies the new aliases by sourcing the temp `.bash_aliases` in `bash -i`.
+3. Runs the normal interactive TUI against those files.
 
-No input is required, so it works in NetBeans' read-only Output window. Your
-real dotfiles are never read or written. Each run gets a new temp home, so
-repeated runs start clean.
+Type the usual commands, for example:
+
+```text
+Select: e 1
+Enter new alias name for [1] (currently 'dr-postgres'): my-db
+Select: a
+```
+
+Your real dotfiles are never read or written. Each run gets a new temp home, so
+repeated runs start clean. Typed input works in the NetBeans Output window.
 
 The demo data lives in `src/main/resources/demo/` as `bash_history`,
 `bash_aliases`, and `bashrc`.
@@ -32,7 +37,8 @@ public static final boolean DEMO_MODE = false;
 ```
 
 Then the program reads your real `~/.bash_history`, `~/.bash_aliases`, and
-`~/.bashrc`, and the interactive prompts work as before:
+`~/.bashrc`. The prompts and commands are identical to demo mode; only the
+files differ:
 
 | Input | Effect |
 | :--- | :--- |
@@ -58,20 +64,20 @@ classpath resources. Maven and NetBeans do that automatically.
 
 1. **File → Open Project** and select the folder containing `pom.xml`.
 2. Make sure a JDK 17+ platform is available under **Tools → Java Platforms**.
-3. Press **F6** to run.
+3. Press **F6** to run, then type your choices in the Output window.
 
 The project targets Java 17 (`maven.compiler.release` in `pom.xml`), so it
 builds on any current JDK and does not require JDK 27.
 
-## Manual sample data (optional)
+## Testing against the fixtures
 
-To try real interactive mode against the fixtures without touching your
-dotfiles:
+To run the interactive TUI against `fixtures/home` without touching your
+dotfiles, bypass demo mode and run the engine directly:
 
 ```bash
 rm -rf /tmp/alias-gen-demo
 cp -r fixtures/home/. /tmp/alias-gen-demo/
-java -Duser.home=/tmp/alias-gen-demo -cp target/classes com.mycompany.alias.generator.AliasGenerator
+java -Duser.home=/tmp/alias-gen-demo -cp target/classes com.mycompany.alias.generator.AliasEngine
 ```
 
 Using `fixtures/home/.` copies the files directly into the destination, so the
