@@ -13,12 +13,22 @@ public class AliasEngine {
     private int scannedCount;
 
     public AliasEngine() {
-        this.scanner = new HistoryScanner();
+        this(new HistoryScanner());
+    }
+
+    public AliasEngine(HistoryScanner scanner) {
+        this.scanner = scanner;
         this.rootNode = new CommandTrieNode();
         this.candidates = new ArrayList<>();
     }
 
     public void runPipeline() {
+        prepare();
+        renderTUI();
+        handleUserInput();
+    }
+
+    private void prepare() {
         scanner.loadExistingAliases();
         scannedCount = scanner.readHistory(rootNode);
 
@@ -30,9 +40,11 @@ public class AliasEngine {
         }
 
         candidates.sort((a, b) -> Integer.compare(b.getPainScore(), a.getPainScore()));
+    }
 
+    public void runDemo() {
+        prepare();
         renderTUI();
-        handleUserInput();
     }
 
     public void renderTUI() {
