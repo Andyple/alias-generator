@@ -60,14 +60,14 @@ This project solves this problem by looking through my terminal history, identif
 &lt;!-- Target: ~150 words --&gt;
 &lt;!-- The prompt allows this to be a numbered list instead of paragraphs. --&gt;
 
-1. **Read Existing Aliases:** 
-2. **Scan History File:** 
-3. **Filter Active Shortcuts:** 
-4. **Build Prefix Tree (Trie):** 
-5. **Recursively Extract Frequent/Painful Commands:** 
-6. **Generate Candidate Alias Names:** 
-7. **Display Interactive TUI:** 
-8. **Append Approved Aliases to Disk:** 
+1. **Read Existing Aliases:** `HistoryScanner.loadExistingAliases()` reads `~/.bash_aliases` and `~/.bashrc`, splits every line that begins with `alias` at the `=`, strips the surrounding quotes, and stores the name in `aliasNames` and the expansion in `aliasExpansions`.
+2. **Scan History File:** `readHistory()` opens `~/.bash_history`, reads it line by line in a `while` loop, trims each line, and splits it into whitespace-separated tokens.
+3. **Filter Active Shortcuts:** Lines that are empty, contain only one word, start with an existing alias name, or exactly match an alias expansion are discarded, so the program never re-suggests a shortcut the user already has.
+4. **Build Prefix Tree (Trie):** Each remaining command is inserted token by token; child nodes are created on demand, and the leaf's frequency counter is incremented once per run.
+5. **Recursively Extract Frequent/Painful Commands:** `collectCandidates()` walks the trie depth-first and rebuilds the command string as it descends. At every command end it computes the Pain Score (`length × frequency`) and adds the command to the candidate list if it meets the length-based threshold: 6 runs under 20 characters, 4 runs up to 40, and only 2 runs beyond that.
+6. **Generate Candidate Alias Names:** `generateAliasName()` combines the initials of the first two non-flag tokens with the last token (`docker run ... postgres` becomes `dr-postgres`), then appends a numeric suffix until the name is not already taken by an existing alias or an earlier suggestion.
+7. **Display Interactive TUI:** `renderTUI()` sorts the candidates by descending Pain Score and prints the scan statistics followed by a fixed-width table of frequency, pain score, proposed alias, and original command.
+8. **Append Approved Aliases to Disk:** `handleUserInput()` accepts index lists such as `1, 3`, `e <num>` to rename a suggestion, `a` or `all` to accept everything, or `q` to quit. Approved aliases are appended to `~/.bash_aliases` under a timestamp comment, with single quotes escaped so the file remains valid Bash.
 
 
 
