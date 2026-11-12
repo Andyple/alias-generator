@@ -91,40 +91,65 @@
 
 | Requirement | File Name | Method / Location | Line Number(s) |
 | :--- | :--- | :--- | :--- |
-| **Custom Class 1** | `CommandTrieNode.java` | Class definition | Line _____ |
-| **Custom Class 2** | `HistoryScanner.java` | Class definition | Line _____ |
-| **Custom Class 3** | `AliasEngine.java` | Class definition | Line _____ |
-| **Loop Requirement** | `HistoryScanner.java` | `while` / `for` loop reading lines | Line _____ |
-| **Recursive Method** | `CommandTrieNode.java` | `collectCandidates()` method | Line _____ |
-| **Exception Handling**| `HistoryScanner.java` | `loadExistingAliases()` `try...catch` block | Line _____ |
+| **Custom Class 1** | `CommandTrieNode.java` | Class definition | Line 8 |
+| **Custom Class 2** | `HistoryScanner.java` | Class definition | Line 15 |
+| **Custom Class 3** | `AliasEngine.java` | Class definition | Line 9 |
+| **Supporting Class** | `AliasCandidate.java` | Class definition | Line 3 |
+| **Entry Point** | `AliasGenerator.java` | Class definition | Line 11 |
+| **Loop Requirement** | `HistoryScanner.java` | `while` loop in `readHistory()` reading history lines | Line 80 (loop body 80–102) |
+| **Loop Requirement (2)** | `HistoryScanner.java` | `while` loop in `loadAliasesFrom()` reading alias files | Line 39 |
+| **Recursive Method** | `CommandTrieNode.java` | `collectCandidates()` definition | Line 50; recursive call on line 65 |
+| **Exception Handling**| `HistoryScanner.java` | `loadExistingAliases()` → `loadAliasesFrom()` `try...catch` | Method line 30; `try` line 36; catches lines 63 and 65 |
+| **Exception Handling (2)**| `HistoryScanner.java` | `readHistory()` `try...catch` | Method line 73; `try` line 77; catches lines 105 and 107 |
 
 ---
 
 ## f. UML Class Diagram
 
 ```text
-+------------------------------------+
-|            AliasEngine             |
-|------------------------------------|
-| - scanner: HistoryScanner          |
-| - rootNode: CommandTrieNode        |
-|------------------------------------|
-| + main(args: String[]): void       |
-| + run(): void                      |
-| + renderTUI(): void                |
-+------------------------------------+
-           |                  |
-           v                  v
-+--------------------+  +--------------------+
-|   HistoryScanner   |  |  CommandTrieNode   |
-|--------------------|  |--------------------|
-| - existingNames    |  | - token: String    |
-| - existingCommands |  | - frequency: int   |
-|--------------------|  | - children: Map    |
-| + loadAliases()    |  |--------------------|
-| + parseHistory()   |  | + insert()         |
-| + appendAliases()  |  | + collect() [REC]  |
-+--------------------+  +--------------------+
++----------------------------------+     +----------------------------------+
+|          AliasGenerator          |     |         HistoryScanner           |
+|----------------------------------|     |----------------------------------|
+| + main(args: String[]): void     |     | - aliasNames: Set<String>        |
++----------------------------------+     | - aliasExpansions: Set<String>   |
+                 | calls                | - bashAliasesFile: File          |
+                 v                      |----------------------------------|
++----------------------------------+     | + loadExistingAliases(): void    |
+|            AliasEngine           |     | + readHistory(root): int         |
+|----------------------------------|     | + appendAliases(list): void      |
+| - scanner: HistoryScanner        |     +----------------------------------+
+| - rootNode: CommandTrieNode      |
+| - candidates: List<AliasCand.>   |     +----------------------------------+
+| - scannedCount: int              |     |         CommandTrieNode          |
+|----------------------------------|     |----------------------------------|
+| + runPipeline(): void            |     | - token: String                  |
+| + renderTUI(): void              |     | - frequency: int                 |
+| + generateAliasName(cmd): String |     | - isEndOfCommand: boolean        |
+| + handleUserInput(): void        |     | - children: Map<String, Node>    |
+| + main(args: String[]): void     |     |----------------------------------|
++----------------------------------+     | + insert(tokens): void           |
+                                         | + collectCandidates(...): void   |
+                                         +----------------------------------+
+
++----------------------------------+
+|          AliasCandidate          |
+|----------------------------------|
+| - originalCommand: String        |
+| - proposedAlias: String          |
+| - frequency: int                 |
+| - painScore: int                 |
+|----------------------------------|
+| + getters / setters              |
++----------------------------------+
+
+Relationships:
+  AliasGenerator   ..>  AliasEngine          calls
+  AliasEngine      *--> HistoryScanner       1
+  AliasEngine      *--> CommandTrieNode      1  (root)
+  AliasEngine      o--> AliasCandidate       0..*
+  HistoryScanner   ..>  CommandTrieNode      insert() for every parsed line
+  CommandTrieNode  o--> CommandTrieNode      0..*  (children map)
+  CommandTrieNode  ..>  AliasCandidate       creates candidates while traversing
 ```
 
 ---
