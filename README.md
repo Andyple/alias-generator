@@ -82,3 +82,62 @@ java -Duser.home=/tmp/alias-gen-demo -cp target/classes com.mycompany.alias.gene
 
 Using `fixtures/home/.` copies the files directly into the destination, so the
 program finds `.bash_history` and `.bash_aliases` on the first try.
+
+## For the professor
+
+1. Unzip the submission.
+2. In NetBeans, choose **File → Open Project** and select the folder containing
+   `pom.xml`.
+3. Wait for Maven to finish loading.
+4. Press **F6** (Run Project). The open file does not matter; the project's main
+   class is `AliasGenerator`.
+5. In the Output window, type:
+
+   ```text
+   e 1
+   my-db
+   a
+   ```
+
+   pressing Enter after each line.
+
+`DEMO_MODE` is already `true`, so this uses a fresh temporary home and never
+touches real dotfiles. If F6 does not start the demo, set
+**Properties → Run → Main Class** to
+`com.mycompany.alias.generator.AliasGenerator`.
+
+## Personal use
+
+For your own history, run `AliasEngine`, which bypasses demo mode and uses the
+real `~/.bash_history`, `~/.bash_aliases`, and `~/.bashrc`:
+
+```bash
+history -a
+javac -d target/classes $(find src/main/java -name '*.java')
+java -cp target/classes com.mycompany.alias.generator.AliasEngine
+```
+
+`history -a` writes the current shell session's commands to `~/.bash_history`
+first, so the scan sees them.
+
+To make it a command, add this function to `~/.bashrc`:
+
+```bash
+alias-gen() {
+    local project="$HOME/dev/school/oop/alias-generator"
+    history -a
+    javac -d "$project/target/classes" $(find "$project/src/main/java" -name '*.java') &&
+        java -cp "$project/target/classes" com.mycompany.alias.generator.AliasEngine
+}
+```
+
+Then reload and run:
+
+```bash
+source ~/.bashrc
+alias-gen
+```
+
+After approving aliases, run `source ~/.bash_aliases` or open a new shell. If
+your `~/.bashrc` does not already source `~/.bash_aliases`, you may want to add
+that so new aliases load automatically.
