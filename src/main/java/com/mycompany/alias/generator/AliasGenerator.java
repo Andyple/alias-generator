@@ -41,7 +41,7 @@ public class AliasGenerator {
         System.out.println();
 
         HistoryScanner scanner = new HistoryScanner(history, aliases, bashrc);
-        new AliasEngine(scanner).runDemo();
+        new AliasEngine(scanner).runPipeline();
     }
 
     private static File copyDemoFile(File home, String resource, String fileName)
