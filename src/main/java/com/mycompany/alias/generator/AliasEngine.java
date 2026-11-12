@@ -40,9 +40,9 @@ public class AliasEngine {
         System.out.println("                      ALIAS-GEN : SHELL OPTIMIZER");
         System.out.println("========================================================================");
         System.out.println("[Config] Ingested " + scanner.getAliasNames().size()
-                + " existing aliases from ~/.bash_aliases");
+                + " existing aliases from " + scanner.getBashAliasesPath());
         System.out.println("[Scan]   Parsed " + String.format("%,d", scannedCount)
-                + " commands from ~/.bash_history");
+                + " commands from " + scanner.getHistoryPath());
         System.out.println("[Filter] " + candidates.size()
                 + " distinct candidate commands qualified by Pain Score");
         System.out.println("------------------------------------------------------------------------");

@@ -15,12 +15,22 @@ import java.util.Set;
 public class HistoryScanner {
     private Set<String> aliasNames;
     private Set<String> aliasExpansions;
+    private File historyFile;
     private File bashAliasesFile;
+    private File bashRcFile;
 
     public HistoryScanner() {
+        this(new File(System.getProperty("user.home"), ".bash_history"),
+                new File(System.getProperty("user.home"), ".bash_aliases"),
+                new File(System.getProperty("user.home"), ".bashrc"));
+    }
+
+    public HistoryScanner(File historyFile, File bashAliasesFile, File bashRcFile) {
         this.aliasNames = new HashSet<>();
         this.aliasExpansions = new HashSet<>();
-        this.bashAliasesFile = new File(System.getProperty("user.home"), ".bash_aliases");
+        this.historyFile = historyFile;
+        this.bashAliasesFile = bashAliasesFile;
+        this.bashRcFile = bashRcFile;
     }
 
     /**
@@ -28,8 +38,8 @@ public class HistoryScanner {
      * (Satisfies rubric requirement: Exception Handling)
      */
     public void loadExistingAliases() {
-        loadAliasesFrom(new File(System.getProperty("user.home"), ".bash_aliases"));
-        loadAliasesFrom(new File(System.getProperty("user.home"), ".bashrc"));
+        loadAliasesFrom(bashAliasesFile);
+        loadAliasesFrom(bashRcFile);
     }
 
     private void loadAliasesFrom(File file) {
@@ -71,7 +81,6 @@ public class HistoryScanner {
      * Parses shell history file and populates Trie
      */
     public int readHistory(CommandTrieNode root) {
-        File historyFile = new File(System.getProperty("user.home"), ".bash_history");
         int parsedCommands = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(historyFile))) {
@@ -146,6 +155,25 @@ public class HistoryScanner {
 
     public void setAliasExpansions(Set<String> aliasExpansions) {
         this.aliasExpansions = aliasExpansions;
+    }
+
+    public String getHistoryPath() {
+        return displayPath(historyFile);
+    }
+
+    public String getBashAliasesPath() {
+        return displayPath(bashAliasesFile);
+    }
+
+    private String displayPath(File file) {
+        String home = System.getProperty("user.home");
+        String path = file.getAbsolutePath();
+
+        if (path.startsWith(home + File.separator)) {
+            return "~" + path.substring(home.length());
+        }
+
+        return path;
     }
 
     public File getBashAliasesFile() {
