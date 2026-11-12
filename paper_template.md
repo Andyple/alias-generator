@@ -22,9 +22,9 @@ This project solves this problem by looking through my terminal history, identif
 * **Input 3:** My choices in the terminal: `1, 3` to accept suggestions, `e 1` to rename one, `a` to accept all, or `q` to quit.
 
 ### What It Computes
-It throws out history lines that are empty, only one word, start with an alias I already have, or are exactly what an alias already runs. Everything else goes into a trie one word at a time, and each full command keeps a count of how often I ran it.
+It throws out history lines that are empty, contain only one word, start with an alias I already have, or are exactly what an alias already runs. Everything else goes into a trie one word at a time, and each full command keeps a count of how often I ran it.
 
-For each command it multiplies the character count by the run count to get a Pain Score. Short commands need 6 runs to qualify, medium ones need 4, and long ones need only 2, since a long command is annoying even when I have only run it twice. It then makes a name from the first letters of the first two words plus the last word, and adds a number if that name is already taken.
+For each command it multiplies the character count by the run count to get a Pain Score. Short commands need 6 runs to qualify, medium ones need 4, and long ones need only 2, since a long command is annoying even when I have only run it twice. It then makes a name from the first letters of the first two non-flag words plus the last non-flag word, and adds a number if that name is already taken.
 
 ### Outputs
 * **Console Output:** A table of candidates sorted by Pain Score, showing the frequency, score, suggested alias, and original command, followed by a prompt.
@@ -37,10 +37,10 @@ For each command it multiplies the character count by the run count to get a Pai
 1. **Read Existing Aliases:** `HistoryScanner.loadExistingAliases()` reads `~/.bash_aliases` and `~/.bashrc`, splits every line that begins with `alias` at the `=`, strips the surrounding quotes, and stores the name in `aliasNames` and the expansion in `aliasExpansions`.
 2. **Scan History File:** `readHistory()` opens `~/.bash_history`, reads it line by line in a `while` loop, trims each line, and splits it into whitespace-separated tokens.
 3. **Filter Active Shortcuts:** Lines that are empty, contain only one word, start with an existing alias name, or exactly match an alias expansion are discarded, so the program never re-suggests a shortcut the user already has.
-4. **Build Prefix Tree (Trie):** Each remaining command is inserted token by token; child nodes are created on demand, and the leaf's frequency counter is incremented once per run.
+4. **Build Prefix Tree (Trie):** Each remaining command is inserted token by token; child nodes are created on demand, and the end node's frequency counter is incremented once per run.
 5. **Recursively Extract Frequent/Painful Commands:** `collectCandidates()` walks the trie depth-first and rebuilds the command string as it descends. At every command end it computes the Pain Score (`length × frequency`) and adds the command to the candidate list if it meets the length-based threshold: 6 runs under 20 characters, 4 runs up to 40, and only 2 runs beyond that.
 6. **Generate Candidate Alias Names:** `generateAliasName()` combines the initials of the first two non-flag tokens with the last token (`docker run ... postgres` becomes `dr-postgres`), then appends a numeric suffix until the name is not already taken by an existing alias or an earlier suggestion.
-7. **Display Interactive TUI:** `renderTUI()` sorts the candidates by descending Pain Score and prints the scan statistics followed by a fixed-width table of frequency, pain score, proposed alias, and original command.
+7. **Display Interactive TUI:** `prepare()` sorts the candidates by descending Pain Score, then `renderTUI()` prints the scan statistics followed by a fixed-width table of frequency, pain score, proposed alias, and original command.
 8. **Append Approved Aliases to Disk:** `handleUserInput()` accepts index lists such as `1, 3`, `e <num>` to rename a suggestion, `a` or `all` to accept everything, or `q` to quit. Approved aliases are appended to `~/.bash_aliases` under a timestamp comment, with single quotes escaped so the file remains valid Bash.
 
 ---
@@ -65,8 +65,8 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 | **Loop Requirement** | `HistoryScanner.java` | `while` loop in `readHistory()` reading history lines | Line 81 (loop body 81–104) |
 | **Loop Requirement (2)** | `HistoryScanner.java` | `while` loop in `loadAliasesFrom()` reading alias files | Line 43 |
 | **Recursive Method** | `CommandTrieNode.java` | `collectCandidates()` definition | Line 35; recursive call on line 46 |
-| **Exception Handling**| `HistoryScanner.java` | `loadExistingAliases()` → `loadAliasesFrom()` `try...catch` | Method line 34; `try` line 40; catches lines 67 and 69 |
-| **Exception Handling (2)**| `HistoryScanner.java` | `readHistory()` `try...catch` | Method line 75; `try` line 78; catches lines 105 and 107 |
+| **Exception Handling** | `HistoryScanner.java` | `loadExistingAliases()` → `loadAliasesFrom()` `try...catch` | Method line 34; `try` line 40; catches lines 67 and 69 |
+| **Exception Handling (2)** | `HistoryScanner.java` | `readHistory()` `try...catch` | Method line 75; `try` line 78; catches lines 105 and 107 |
 
 ---
 
@@ -85,23 +85,25 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
                                          | + loadExistingAliases(): void    |
                  | calls                 | + readHistory(root): int         |
                  v                       | + appendAliases(list): void      |
-                                         | + getHistoryPath(): String       |
-+----------------------------------+     | + getBashAliasesPath(): String   |
-|           AliasEngine            |     +----------------------------------+
-+----------------------------------+
-| - scanner: HistoryScanner        |     +----------------------------------+
-| - rootNode: CommandTrieNode      |     |         CommandTrieNode          |
-| - candidates: List<AliasCand.>   |     +----------------------------------+
-| - scannedCount: int              |     | - token: String                  |
-+----------------------------------+     | - frequency: int                 |
-| + runPipeline(): void            |     | - isEndOfCommand: boolean        |
-| - prepare(): void                |     | - children: Map<String, Node>    |
-| - renderTUI(): void              |     +----------------------------------+
-| - generateAliasName(cmd): String |     | + insert(tokens): void           |
-| - handleUserInput(): void        |     | + collectCandidates(...): void   |
+                                         | + getAliasNames(): Set<String>   |
++----------------------------------+     | + getHistoryPath(): String       |
+|           AliasEngine            |     | + getBashAliasesPath(): String   |
++----------------------------------+     +----------------------------------+
+| - scanner: HistoryScanner        |
+| - rootNode: CommandTrieNode      |
+| - candidates: List<AliasCand.>   |
+| - scannedCount: int              |     +----------------------------------+
++----------------------------------+     |         CommandTrieNode          |
+| + runPipeline(): void            |     +----------------------------------+
+| - prepare(): void                |     | - token: String                  |
+| - renderTUI(): void              |     | - frequency: int                 |
+| - generateAliasName(cmd): String |     | - isEndOfCommand: boolean        |
+| - handleUserInput(): void        |     | - children: Map<String, Node>    |
 | + main(args: String[]): void     |     +----------------------------------+
-+----------------------------------+
-
++----------------------------------+     | + insert(tokens): void           |
+                                         | + collectCandidates(...): void   |
+                 | 0..*                  +----------------------------------+
+                 v
 +----------------------------------+
 |          AliasCandidate          |
 +----------------------------------+
@@ -110,7 +112,11 @@ I also learned that a terminal tool is mostly about trust. Showing the frequency
 | - frequency: int                 |
 | - painScore: int                 |
 +----------------------------------+
-| + getters, setProposedAlias      |
+| + getOriginalCommand(): String   |
+| + getProposedAlias(): String     |
+| + getFrequency(): int            |
+| + getPainScore(): int            |
+| + setProposedAlias(name): void   |
 +----------------------------------+
 
 Relationships:
