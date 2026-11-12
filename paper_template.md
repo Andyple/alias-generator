@@ -31,26 +31,18 @@ This project solves this problem by looking through my terminal history, identif
   - Existing alias configs (~/.bashrc or ~/.bash_aliases)
   - User terminal selections/inputs (e.g., typing numbers or &#39;e 1&#39;)
 --&gt;
-* **Input 1:** 
-* **Input 2:** 
-* **Input 3:** 
+* **Input 1:** My Bash history file, `~/.bash_history`, where every command I type is stored one line at a time.
+* **Input 2:** My existing aliases from `~/.bash_aliases` and `~/.bashrc`, so the program knows which shortcuts and commands I already have.
+* **Input 3:** My choices in the terminal: `1, 3` to accept suggestions, `e 1` to rename one, `a` to accept all, or `q` to quit.
 
 ### What It Computes
-&lt;!-- Explain the calculations and filtering logic:
-  - How it filters out already-aliased commands
-  - How it counts command frequencies using the Trie structure
-  - How it calculates the Pain Score (Length * Frequency)
-  - How it creates a shorthand name without colliding with existing aliases
---&gt;
-* [Explain the core computations here...]
+It throws out history lines that are empty, only one word, start with an alias I already have, or are exactly what an alias already runs. Everything else goes into a trie one word at a time, and each full command keeps a count of how often I ran it.
+
+For each command it multiplies the character count by the run count to get a Pain Score. Short commands need 6 runs to qualify, medium ones need 4, and long ones need only 2, since a long command is annoying even when I have only run it twice. It then makes a name from the first letters of the first two words plus the last word, and adds a number if that name is already taken.
 
 ### Outputs
-&lt;!-- List what the program produces:
-  - The formatted terminal table (frequencies, pain scores, suggestions)
-  - The updated ~/.bash_aliases file with appended alias lines
---&gt;
-* **Console Output:** 
-* **File Output:** 
+* **Console Output:** A table of candidates sorted by Pain Score, showing the frequency, score, suggested alias, and original command, followed by a prompt.
+* **File Output:** The aliases I approve, appended to `~/.bash_aliases` under a timestamp comment.
 
 
 
